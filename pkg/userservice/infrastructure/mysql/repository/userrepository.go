@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"userservice/pkg/userservice/domain"
 )
 
@@ -29,12 +30,12 @@ func (repo *userRepository) Find(id domain.UserID) (domain.User, error) {
 
 	var user sqlxUser
 
-	err = repo.client.Get(user, selectSql, binaryUUID)
+	err = repo.client.Get(&user, selectSql, binaryUUID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return domain.User{}, domain.ErrUserNotFound
 		}
-		return domain.User{}, err
+		return domain.User{}, errors.WithStack(err)
 	}
 
 	return domain.User{
@@ -50,12 +51,12 @@ func (repo *userRepository) FindByEmail(email string) (domain.User, error) {
 
 	var user sqlxUser
 
-	err := repo.client.Get(user, selectSql, email)
+	err := repo.client.Get(&user, selectSql, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return domain.User{}, domain.ErrUserNotFound
 		}
-		return domain.User{}, err
+		return domain.User{}, errors.WithStack(err)
 	}
 
 	return domain.User{
@@ -71,7 +72,7 @@ func (repo *userRepository) Store(user domain.User) error {
 
 	binaryUUID, err := uuid.UUID(user.Id).MarshalBinary()
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	_, err = repo.client.Exec(insertSql, binaryUUID, user.Email, user.Password, int(user.Role))
@@ -83,7 +84,7 @@ func (repo *userRepository) Remove(id domain.UserID) error {
 
 	binaryUUID, err := uuid.UUID(id).MarshalBinary()
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	_, err = repo.client.Exec(deleteSql, binaryUUID)
@@ -91,8 +92,8 @@ func (repo *userRepository) Remove(id domain.UserID) error {
 }
 
 type sqlxUser struct {
-	UserId   uuid.UUID
-	Email    string
-	Password string
-	Role     int
+	UserId   uuid.UUID `db:"user_id"`
+	Email    string    `db:"email"`
+	Password string    `db:"password"`
+	Role     int       `db:"role"`
 }

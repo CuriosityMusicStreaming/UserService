@@ -1,10 +1,10 @@
 package transport
 
 import (
+	commonauth "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	api "userservice/api/userservice"
-	"userservice/pkg/userservice/app/service"
 	"userservice/pkg/userservice/infrastructure"
 )
 
@@ -30,11 +30,28 @@ func (server *userServiceServer) AddUser(_ context.Context, req *api.AddUserRequ
 	return &api.AddUserResponse{UserId: userID}, nil
 }
 
-var apiToUserRoleMap = map[api.UserRole]service.Role{
-	api.UserRole_LISTENER: service.Listener,
-	api.UserRole_CREATOR:  service.Creator,
+func (server *userServiceServer) AuthenticateUser(_ context.Context, req *api.AuthenticateUserRequest) (*api.AuthenticateUserResponse, error) {
+	userID, role, err := server.container.AuthenticationService().AuthenticateUser(req.Email, req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AuthenticateUserResponse{
+		UserID: userID,
+		Role:   userRoleToApiMap[role],
+	}, nil
+}
+
+var apiToUserRoleMap = map[api.UserRole]commonauth.Role{
+	api.UserRole_LISTENER: commonauth.Listener,
+	api.UserRole_CREATOR:  commonauth.Creator,
+}
+
+var userRoleToApiMap = map[commonauth.Role]api.UserRole{
+	commonauth.Listener: api.UserRole_LISTENER,
+	commonauth.Creator:  api.UserRole_CREATOR,
 }
 
 var (
-	ErrUnknownUserRole = errors.New("unknown content type")
+	ErrUnknownUserRole = errors.New("unknown user role")
 )

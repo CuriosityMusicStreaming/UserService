@@ -3,7 +3,7 @@ module userservice
 go 1.16
 
 require (
-	github.com/CuriosityMusicStreaming/ComponentsPool v1.0.2
+	github.com/CuriosityMusicStreaming/ComponentsPool v1.0.4
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0

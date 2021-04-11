@@ -6,7 +6,7 @@ import (
 )
 
 type Hasher interface {
-	Hash(password string) string
+	Hash(value string) string
 }
 
 type sha1Hasher struct {

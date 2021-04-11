@@ -1,6 +1,7 @@
 package service
 
 import (
+	commonauth "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
 	"github.com/google/uuid"
 	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/domain"
@@ -8,13 +9,8 @@ import (
 
 type Role int
 
-const (
-	Listener = Role(domain.Listener)
-	Creator  = Role(domain.Creator)
-)
-
 type UserService interface {
-	AddUser(email, password string, role Role) (string, error)
+	AddUser(email, password string, role commonauth.Role) (string, error)
 }
 
 func NewUserService(domainService domain.UserService, hasher hash.Hasher) UserService {
@@ -29,7 +25,7 @@ type userService struct {
 	hasher        hash.Hasher
 }
 
-func (service *userService) AddUser(email, password string, role Role) (string, error) {
+func (service *userService) AddUser(email, password string, role commonauth.Role) (string, error) {
 	userId, err := service.domainService.AddUser(email, service.hasher.Hash(password), domain.Role(role))
 	if err != nil {
 		return "", err

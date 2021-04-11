@@ -12,6 +12,13 @@ service UserService {
             body: "*"
         };
     }
+
+    rpc AuthenticateUser (AuthenticateUserRequest) returns (AuthenticateUserResponse) {
+        option (google.api.http) = {
+            post: "/api/us/v1/auth-user"
+            body: "*"
+        };
+    }
 }
 
 message AddUserRequest {
@@ -22,6 +29,16 @@ message AddUserRequest {
 
 message AddUserResponse {
     string userId = 1;
+}
+
+message AuthenticateUserRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message AuthenticateUserResponse {
+    string userID = 1;
+    UserRole role = 2;
 }
 
 enum UserRole {
