@@ -38,5 +38,5 @@ func (service *authenticationService) AuthenticateUser(email, password string) (
 		return "", 0, ErrIncorrectAuthData
 	}
 
-	return uuid.UUID(user.Id).String(), commonauth.Role(user.Role), err
+	return uuid.UUID(user.ID).String(), commonauth.Role(user.Role), err
 }

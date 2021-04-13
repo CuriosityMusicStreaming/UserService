@@ -39,7 +39,7 @@ func (repo *userRepository) Find(id domain.UserID) (domain.User, error) {
 	}
 
 	return domain.User{
-		Id:       domain.UserID(user.UserId),
+		ID:       domain.UserID(user.UserId),
 		Email:    user.Email,
 		Password: user.Password,
 		Role:     domain.Role(user.Role),
@@ -60,7 +60,7 @@ func (repo *userRepository) FindByEmail(email string) (domain.User, error) {
 	}
 
 	return domain.User{
-		Id:       domain.UserID(user.UserId),
+		ID:       domain.UserID(user.UserId),
 		Email:    user.Email,
 		Password: user.Password,
 		Role:     domain.Role(user.Role),
@@ -70,7 +70,7 @@ func (repo *userRepository) FindByEmail(email string) (domain.User, error) {
 func (repo *userRepository) Store(user domain.User) error {
 	const insertSql = `INSERT INTO user VALUES(?, ?, ?, ?)`
 
-	binaryUUID, err := uuid.UUID(user.Id).MarshalBinary()
+	binaryUUID, err := uuid.UUID(user.ID).MarshalBinary()
 	if err != nil {
 		return errors.WithStack(err)
 	}

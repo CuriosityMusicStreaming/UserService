@@ -15,7 +15,7 @@ const (
 type UserID uuid.UUID
 
 type User struct {
-	Id       UserID
+	ID       UserID
 	Email    string
 	Password string
 	Role

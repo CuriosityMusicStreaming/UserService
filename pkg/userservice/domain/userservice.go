@@ -28,7 +28,7 @@ func (service *userService) AddUser(email, password string, role Role) (UserID, 
 	}
 
 	user = User{
-		Id:       service.repo.NewID(),
+		ID:       service.repo.NewID(),
 		Email:    email,
 		Password: password,
 		Role:     role,
@@ -39,5 +39,5 @@ func (service *userService) AddUser(email, password string, role Role) (UserID, 
 		return UserID{}, err
 	}
 
-	return user.Id, nil
+	return user.ID, nil
 }
