@@ -1,7 +1,6 @@
 package service
 
 import (
-	commonauth "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
 	"github.com/google/uuid"
 	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/domain"
@@ -9,27 +8,55 @@ import (
 
 type Role int
 
+const (
+	Listener = Role(domain.Listener)
+	Creator  = Role(domain.Creator)
+)
+
 type UserService interface {
-	AddUser(email, password string, role commonauth.Role) (string, error)
+	AddUser(email, password string, role Role) (string, error)
 }
 
-func NewUserService(domainService domain.UserService, hasher hash.Hasher) UserService {
+func NewUserService(unitOfWorkFactory UnitOfWorkFactory, hasher hash.Hasher) UserService {
 	return &userService{
-		domainService: domainService,
-		hasher:        hasher,
+		unitOfWorkFactory: unitOfWorkFactory,
+		hasher:            hasher,
 	}
 }
 
 type userService struct {
-	domainService domain.UserService
-	hasher        hash.Hasher
+	unitOfWorkFactory UnitOfWorkFactory
+	hasher            hash.Hasher
 }
 
-func (service *userService) AddUser(email, password string, role commonauth.Role) (string, error) {
-	userId, err := service.domainService.AddUser(email, service.hasher.Hash(password), domain.Role(role))
+func (service *userService) AddUser(email, password string, role Role) (string, error) {
+	var userID domain.UserID
+
+	err := service.executeInUnitOfWork(func(provider RepositoryProvider) error {
+		domainService := domain.NewUserService(provider.UserRepository())
+
+		var err2 error
+
+		userID, err2 = domainService.AddUser(email, service.hasher.Hash(password), domain.Role(role))
+
+		return err2
+	})
+
 	if err != nil {
 		return "", err
 	}
 
-	return uuid.UUID(userId).String(), nil
+	return uuid.UUID(userID).String(), nil
+}
+
+func (service *userService) executeInUnitOfWork(f func(provider RepositoryProvider) error) error {
+	unitOfWork, err := service.unitOfWorkFactory.NewUnitOfWork("")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = unitOfWork.Complete(err)
+	}()
+	err = f(unitOfWork)
+	return err
 }

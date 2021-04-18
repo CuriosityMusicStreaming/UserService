@@ -22,7 +22,7 @@ type User struct {
 }
 
 var (
-	ErrUserNotFound               = errors.New("content not found")
+	ErrUserNotFound               = errors.New("user not found")
 	ErrUserWithEmailAlreadyExists = errors.New("user with email already exists")
 )
 

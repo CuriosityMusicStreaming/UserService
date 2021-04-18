@@ -1,11 +1,12 @@
 package infrastructure
 
 import (
-	"github.com/jmoiron/sqlx"
+	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
 	"userservice/pkg/userservice/app/auth"
 	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/app/service"
 	"userservice/pkg/userservice/domain"
+	mysql2 "userservice/pkg/userservice/infrastructure/mysql"
 	"userservice/pkg/userservice/infrastructure/mysql/repository"
 )
 
@@ -18,18 +19,23 @@ type DependencyContainer interface {
 	AuthenticationService() auth.AuthenticationService
 }
 
-func NewDependencyContainer(client *sqlx.DB, parameters Parameters) DependencyContainer {
-	return &dependencyContainer{client: client, parameters: parameters}
+func NewDependencyContainer(client mysql.TransactionalClient, parameters Parameters) DependencyContainer {
+	return &dependencyContainer{
+		client:     client,
+		parameters: parameters,
+		unitOfWork: unitOfWorkFactory(client),
+	}
 }
 
 type dependencyContainer struct {
-	client     *sqlx.DB
+	client     mysql.TransactionalClient
+	unitOfWork service.UnitOfWorkFactory
 	parameters Parameters
 }
 
 func (container *dependencyContainer) UserService() service.UserService {
 	return service.NewUserService(
-		container.DomainUserService(),
+		container.unitOfWork,
 		container.Hasher(),
 	)
 }
@@ -48,4 +54,8 @@ func (container *dependencyContainer) UserRepository() domain.UserRepository {
 
 func (container *dependencyContainer) Hasher() hash.Hasher {
 	return hash.NewSHA1Hasher(container.parameters.HasherSalt())
+}
+
+func unitOfWorkFactory(client mysql.TransactionalClient) service.UnitOfWorkFactory {
+	return mysql2.NewUnitOfFactory(client)
 }

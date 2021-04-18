@@ -2,18 +2,18 @@ package repository
 
 import (
 	"database/sql"
+	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"userservice/pkg/userservice/domain"
 )
 
-func NewUserRepository(client *sqlx.DB) domain.UserRepository {
+func NewUserRepository(client mysql.Client) domain.UserRepository {
 	return &userRepository{client: client}
 }
 
 type userRepository struct {
-	client *sqlx.DB
+	client mysql.Client
 }
 
 func (repo *userRepository) NewID() domain.UserID {

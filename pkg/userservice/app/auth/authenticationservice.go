@@ -1,8 +1,8 @@
 package auth
 
 import (
-	commonauth "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
 	"github.com/google/uuid"
+	appservice "userservice/pkg/userservice/app/service"
 
 	"github.com/pkg/errors"
 	"userservice/pkg/userservice/app/hash"
@@ -12,7 +12,7 @@ import (
 var ErrIncorrectAuthData = errors.New("incorrect auth data")
 
 type AuthenticationService interface {
-	AuthenticateUser(email, password string) (string, commonauth.Role, error)
+	AuthenticateUser(email, password string) (string, appservice.Role, error)
 }
 
 func NewAuthenticationService(userRepo domain.UserRepository, hasher hash.Hasher) AuthenticationService {
@@ -28,7 +28,7 @@ type authenticationService struct {
 	hasher        hash.Hasher
 }
 
-func (service *authenticationService) AuthenticateUser(email, password string) (string, commonauth.Role, error) {
+func (service *authenticationService) AuthenticateUser(email, password string) (string, appservice.Role, error) {
 	user, err := service.userRepo.FindByEmail(email)
 	if err != nil {
 		return "", 0, err
@@ -38,5 +38,5 @@ func (service *authenticationService) AuthenticateUser(email, password string) (
 		return "", 0, ErrIncorrectAuthData
 	}
 
-	return uuid.UUID(user.ID).String(), commonauth.Role(user.Role), err
+	return uuid.UUID(user.ID).String(), appservice.Role(user.Role), err
 }
