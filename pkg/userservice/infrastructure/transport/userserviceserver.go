@@ -42,6 +42,20 @@ func (server *userServiceServer) AuthenticateUser(_ context.Context, req *api.Au
 	}, nil
 }
 
+func (server *userServiceServer) CanAddContent(_ context.Context, req *api.CanAddContentRequest) (*api.CanAddContentResponse, error) {
+	userDesc, err := server.container.UserDescriptorSerializer().Deserialize(req.UserToken)
+	if err != nil {
+		return nil, err
+	}
+
+	canAddContent, err := server.container.AuthenticationService().CanAddContent(userDesc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CanAddContentResponse{CanAdd: canAddContent}, nil
+}
+
 var apiToUserRoleMap = map[api.UserRole]service.Role{
 	api.UserRole_LISTENER: service.Listener,
 	api.UserRole_CREATOR:  service.Creator,

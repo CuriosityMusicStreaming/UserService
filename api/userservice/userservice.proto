@@ -19,6 +19,13 @@ service UserService {
             body: "*"
         };
     }
+
+    rpc CanAddContent (CanAddContentRequest) returns (CanAddContentResponse) {
+        option (google.api.http) = {
+            post: "/api/us/v1/can-add-content"
+            body: "*"
+        };
+    }
 }
 
 message AddUserRequest {
@@ -44,4 +51,12 @@ message AuthenticateUserResponse {
 enum UserRole {
     LISTENER = 0;
     CREATOR = 1;
+}
+
+message CanAddContentRequest {
+    string userToken = 1;
+}
+
+message CanAddContentResponse {
+    bool canAdd = 1;
 }

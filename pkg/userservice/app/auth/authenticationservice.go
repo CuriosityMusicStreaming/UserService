@@ -1,35 +1,35 @@
 package auth
 
 import (
-	"github.com/google/uuid"
+	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
+	"userservice/pkg/userservice/app/query"
 	appservice "userservice/pkg/userservice/app/service"
 
 	"github.com/pkg/errors"
 	"userservice/pkg/userservice/app/hash"
-	"userservice/pkg/userservice/domain"
 )
 
 var ErrIncorrectAuthData = errors.New("incorrect auth data")
 
 type AuthenticationService interface {
 	AuthenticateUser(email, password string) (string, appservice.Role, error)
+	CanAddContent(descriptor auth.UserDescriptor) (bool, error)
 }
 
-func NewAuthenticationService(userRepo domain.UserRepository, hasher hash.Hasher) AuthenticationService {
+func NewAuthenticationService(queryService query.UserQueryService, hasher hash.Hasher) AuthenticationService {
 	return &authenticationService{
-		userRepo: userRepo,
-		hasher:   hasher,
+		queryService: queryService,
+		hasher:       hasher,
 	}
 }
 
 type authenticationService struct {
-	domainService domain.UserService
-	userRepo      domain.UserRepository
-	hasher        hash.Hasher
+	queryService query.UserQueryService
+	hasher       hash.Hasher
 }
 
 func (service *authenticationService) AuthenticateUser(email, password string) (string, appservice.Role, error) {
-	user, err := service.userRepo.FindByEmail(email)
+	user, err := service.queryService.GetByEmail(email)
 	if err != nil {
 		return "", 0, err
 	}
@@ -38,5 +38,14 @@ func (service *authenticationService) AuthenticateUser(email, password string) (
 		return "", 0, ErrIncorrectAuthData
 	}
 
-	return uuid.UUID(user.ID).String(), appservice.Role(user.Role), err
+	return user.ID.String(), appservice.Role(user.Role), err
+}
+
+func (service *authenticationService) CanAddContent(userDescriptor auth.UserDescriptor) (bool, error) {
+	user, err := service.queryService.GetUser(userDescriptor.UserID)
+	if err != nil {
+		return false, err
+	}
+
+	return user.Role == query.Creator, nil
 }
