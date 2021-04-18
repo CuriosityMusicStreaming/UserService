@@ -9,7 +9,10 @@ import (
 	"userservice/pkg/userservice/app/hash"
 )
 
-var ErrIncorrectAuthData = errors.New("incorrect auth data")
+var (
+	ErrIncorrectAuthData         = errors.New("incorrect auth data")
+	ErrOnlyCreatorsCanAddContent = errors.New("only creators can add content")
+)
 
 type AuthenticationService interface {
 	AuthenticateUser(email, password string) (string, appservice.Role, error)
@@ -47,5 +50,10 @@ func (service *authenticationService) CanAddContent(userDescriptor auth.UserDesc
 		return false, err
 	}
 
-	return user.Role == query.Creator, nil
+	canAdd := user.Role == query.Creator
+	if !canAdd {
+		return false, ErrOnlyCreatorsCanAddContent
+	}
+
+	return true, nil
 }
