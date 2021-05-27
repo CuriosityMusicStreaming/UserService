@@ -1,0 +1,4 @@
+api:
+    userservice: master
+    authorizationservice: master
+    authenticationservice: master

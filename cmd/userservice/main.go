@@ -15,6 +15,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"userservice/api/authenticationservice"
+	"userservice/api/authorizationservice"
 	"userservice/api/userservice"
 	migrationsembedder "userservice/data/mysql"
 	"userservice/pkg/userservice/infrastructure"
@@ -67,11 +69,14 @@ func runService(config *config, logger log.MainLogger) error {
 
 	container := infrastructure.NewDependencyContainer(connector.TransactionalClient(), config)
 
-	serviceApi := transport.NewUserServiceServer(container)
+	userServiceServer := transport.NewUserServiceServer(container)
+	authServiceServer := transport.NewAuthServer(container)
 	serverHub := server.NewHub(stopChan)
 
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(makeGRPCUnaryInterceptor(logger)))
-	userservice.RegisterUserServiceServer(baseServer, serviceApi)
+	userservice.RegisterUserServiceServer(baseServer, userServiceServer)
+	authenticationservice.RegisterAuthenticationServiceServer(baseServer, authServiceServer)
+	authorizationservice.RegisterAuthorizationServiceServer(baseServer, authServiceServer)
 
 	serverHub.AddServer(server.NewGrpcServer(
 		baseServer,
