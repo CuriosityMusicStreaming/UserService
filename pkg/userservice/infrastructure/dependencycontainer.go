@@ -7,10 +7,8 @@ import (
 	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/app/query"
 	"userservice/pkg/userservice/app/service"
-	"userservice/pkg/userservice/domain"
 	"userservice/pkg/userservice/infrastructure/mysql"
 	mysqlquery "userservice/pkg/userservice/infrastructure/mysql/query"
-	"userservice/pkg/userservice/infrastructure/mysql/repository"
 )
 
 type Parameters interface {
@@ -21,51 +19,64 @@ type DependencyContainer interface {
 	UserService() service.UserService
 	AuthenticationService() auth.AuthenticationService
 	UserDescriptorSerializer() commonauth.UserDescriptorSerializer
+	UserQueryService() query.UserQueryService
 }
 
-func NewDependencyContainer(client commonmysql.TransactionalClient, parameters Parameters) DependencyContainer {
+func NewDependencyContainer(client commonmysql.TransactionalClient, parameters Parameters) *dependencyContainer {
+	userQueryService := userQueryService(client)
+	hasher := hasher(parameters)
+
 	return &dependencyContainer{
-		client:     client,
-		parameters: parameters,
-		unitOfWork: unitOfWorkFactory(client),
+		userService:              userService(unitOfWorkFactory(client), hasher),
+		authenticationService:    authenticationService(userQueryService, hasher),
+		userDescriptorSerializer: userDescriptorSerializer(),
 	}
 }
 
 type dependencyContainer struct {
-	client     commonmysql.TransactionalClient
-	unitOfWork service.UnitOfWorkFactory
-	parameters Parameters
+	userService              service.UserService
+	userQueryService         query.UserQueryService
+	authenticationService    auth.AuthenticationService
+	userDescriptorSerializer commonauth.UserDescriptorSerializer
 }
 
 func (container *dependencyContainer) UserService() service.UserService {
-	return service.NewUserService(
-		container.unitOfWork,
-		container.Hasher(),
-	)
+	return container.userService
 }
 
 func (container *dependencyContainer) AuthenticationService() auth.AuthenticationService {
-	return auth.NewAuthenticationService(container.userQueryService(), container.Hasher())
+	return container.authenticationService
 }
 
 func (container *dependencyContainer) UserDescriptorSerializer() commonauth.UserDescriptorSerializer {
+	return container.userDescriptorSerializer
+}
+
+func (container *dependencyContainer) UserQueryService() query.UserQueryService {
+	return container.userQueryService
+}
+
+func userService(unitOfWorkFactory service.UnitOfWorkFactory, hasher hash.Hasher) service.UserService {
+	return service.NewUserService(
+		unitOfWorkFactory,
+		hasher,
+	)
+}
+
+func authenticationService(queryService query.UserQueryService, hasher hash.Hasher) auth.AuthenticationService {
+	return auth.NewAuthenticationService(queryService, hasher)
+}
+
+func userDescriptorSerializer() commonauth.UserDescriptorSerializer {
 	return commonauth.NewUserDescriptorSerializer()
 }
 
-func (container *dependencyContainer) DomainUserService() domain.UserService {
-	return domain.NewUserService(container.UserRepository())
+func hasher(parameters Parameters) hash.Hasher {
+	return hash.NewSHA1Hasher(parameters.HasherSalt())
 }
 
-func (container *dependencyContainer) UserRepository() domain.UserRepository {
-	return repository.NewUserRepository(container.client)
-}
-
-func (container *dependencyContainer) Hasher() hash.Hasher {
-	return hash.NewSHA1Hasher(container.parameters.HasherSalt())
-}
-
-func (container *dependencyContainer) userQueryService() query.UserQueryService {
-	return mysqlquery.NewUserQueryService(container.client)
+func userQueryService(client commonmysql.TransactionalClient) query.UserQueryService {
+	return mysqlquery.NewUserQueryService(client)
 }
 
 func unitOfWorkFactory(client commonmysql.TransactionalClient) service.UnitOfWorkFactory {
