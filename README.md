@@ -1,4 +1,4 @@
-##UserService service
+## UserService service
 
 Service to manage users(add, delete, authorize)
 
