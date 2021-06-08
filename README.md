@@ -1,4 +1,4 @@
-##UserService service
+## UserService service
 
 Service to manage users(add, delete, authorize)
 
@@ -13,6 +13,7 @@ make
 Command build all dependencies and put binary file in `bin/` 
 
 (_Optional_) Run `make publish`, to dockerize service
+
 
 #### Test
 
