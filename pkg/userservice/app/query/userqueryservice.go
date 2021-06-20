@@ -3,6 +3,7 @@ package query
 import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+
 	"userservice/pkg/userservice/domain"
 )
 

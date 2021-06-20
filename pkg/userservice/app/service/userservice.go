@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/google/uuid"
+
 	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/domain"
 )

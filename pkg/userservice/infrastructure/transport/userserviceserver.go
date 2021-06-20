@@ -3,6 +3,7 @@ package transport
 import (
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
+
 	api "userservice/api/userservice"
 	"userservice/pkg/userservice/app/service"
 	"userservice/pkg/userservice/infrastructure"
@@ -33,11 +34,6 @@ func (server *userServiceServer) AddUser(_ context.Context, req *api.AddUserRequ
 var apiToUserRoleMap = map[api.UserRole]service.Role{
 	api.UserRole_LISTENER: service.Listener,
 	api.UserRole_CREATOR:  service.Creator,
-}
-
-var userRoleToApiMap = map[service.Role]api.UserRole{
-	service.Listener: api.UserRole_LISTENER,
-	service.Creator:  api.UserRole_CREATOR,
 }
 
 var (

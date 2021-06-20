@@ -2,9 +2,11 @@ package repository
 
 import (
 	"database/sql"
+
 	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+
 	"userservice/pkg/userservice/domain"
 )
 
@@ -21,7 +23,7 @@ func (repo *userRepository) NewID() domain.UserID {
 }
 
 func (repo *userRepository) Find(id domain.UserID) (domain.User, error) {
-	const selectSql = `SELECT * from user WHERE user_id = ?`
+	const selectSQL = `SELECT * from user WHERE user_id = ?`
 
 	binaryUUID, err := uuid.UUID(id).MarshalBinary()
 	if err != nil {
@@ -30,7 +32,7 @@ func (repo *userRepository) Find(id domain.UserID) (domain.User, error) {
 
 	var user sqlxUser
 
-	err = repo.client.Get(&user, selectSql, binaryUUID)
+	err = repo.client.Get(&user, selectSQL, binaryUUID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return domain.User{}, domain.ErrUserNotFound
@@ -39,7 +41,7 @@ func (repo *userRepository) Find(id domain.UserID) (domain.User, error) {
 	}
 
 	return domain.User{
-		ID:       domain.UserID(user.UserId),
+		ID:       domain.UserID(user.UserID),
 		Email:    user.Email,
 		Password: user.Password,
 		Role:     domain.Role(user.Role),
@@ -47,11 +49,11 @@ func (repo *userRepository) Find(id domain.UserID) (domain.User, error) {
 }
 
 func (repo *userRepository) FindByEmail(email string) (domain.User, error) {
-	const selectSql = `SELECT * from user WHERE email = ?`
+	const selectSQL = `SELECT * from user WHERE email = ?`
 
 	var user sqlxUser
 
-	err := repo.client.Get(&user, selectSql, email)
+	err := repo.client.Get(&user, selectSQL, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return domain.User{}, domain.ErrUserNotFound
@@ -60,7 +62,7 @@ func (repo *userRepository) FindByEmail(email string) (domain.User, error) {
 	}
 
 	return domain.User{
-		ID:       domain.UserID(user.UserId),
+		ID:       domain.UserID(user.UserID),
 		Email:    user.Email,
 		Password: user.Password,
 		Role:     domain.Role(user.Role),
@@ -68,31 +70,31 @@ func (repo *userRepository) FindByEmail(email string) (domain.User, error) {
 }
 
 func (repo *userRepository) Store(user domain.User) error {
-	const insertSql = `INSERT INTO user VALUES(?, ?, ?, ?)`
+	const insertSQL = `INSERT INTO user VALUES(?, ?, ?, ?)`
 
 	binaryUUID, err := uuid.UUID(user.ID).MarshalBinary()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	_, err = repo.client.Exec(insertSql, binaryUUID, user.Email, user.Password, int(user.Role))
+	_, err = repo.client.Exec(insertSQL, binaryUUID, user.Email, user.Password, int(user.Role))
 	return err
 }
 
 func (repo *userRepository) Remove(id domain.UserID) error {
-	const deleteSql = `DELETE FROM user WHERE user_id = ?`
+	const deleteSQL = `DELETE FROM user WHERE user_id = ?`
 
 	binaryUUID, err := uuid.UUID(id).MarshalBinary()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	_, err = repo.client.Exec(deleteSql, binaryUUID)
+	_, err = repo.client.Exec(deleteSQL, binaryUUID)
 	return err
 }
 
 type sqlxUser struct {
-	UserId   uuid.UUID `db:"user_id"`
+	UserID   uuid.UUID `db:"user_id"`
 	Email    string    `db:"email"`
 	Password string    `db:"password"`
 	Role     int       `db:"role"`

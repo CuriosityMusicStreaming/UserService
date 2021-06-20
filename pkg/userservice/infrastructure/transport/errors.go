@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
 	"userservice/pkg/userservice/app/auth"
 	"userservice/pkg/userservice/app/query"
 	"userservice/pkg/userservice/domain"

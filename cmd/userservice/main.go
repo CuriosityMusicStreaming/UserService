@@ -2,12 +2,6 @@ package main
 
 import (
 	"context"
-	log "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/logger"
-	jsonlog "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/logger"
-	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
-	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/server"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"google.golang.org/grpc"
 	"io"
 	stdlog "log"
 	"net/http"
@@ -15,14 +9,21 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	log "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/logger"
+	jsonlog "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/logger"
+	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
+	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/server"
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"google.golang.org/grpc"
+
 	"userservice/api/authenticationservice"
 	"userservice/api/authorizationservice"
 	"userservice/api/userservice"
 	migrationsembedder "userservice/data/mysql"
 	"userservice/pkg/userservice/infrastructure"
 	"userservice/pkg/userservice/infrastructure/transport"
-
-	"github.com/gorilla/mux"
 )
 
 var appID = "UNKNOWN"

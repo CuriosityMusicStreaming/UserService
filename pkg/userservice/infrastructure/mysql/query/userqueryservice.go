@@ -2,9 +2,11 @@ package query
 
 import (
 	"database/sql"
+
 	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+
 	"userservice/pkg/userservice/app/query"
 	"userservice/pkg/userservice/domain"
 )
@@ -20,7 +22,7 @@ type userQueryService struct {
 }
 
 func (service *userQueryService) GetUser(id uuid.UUID) (query.UserView, error) {
-	const selectSql = `SELECT * from user WHERE user_id = ?`
+	const selectSQL = `SELECT * from user WHERE user_id = ?`
 
 	binaryUUID, err := id.MarshalBinary()
 	if err != nil {
@@ -29,7 +31,7 @@ func (service *userQueryService) GetUser(id uuid.UUID) (query.UserView, error) {
 
 	var user sqlxUserView
 
-	err = service.client.Get(&user, selectSql, binaryUUID)
+	err = service.client.Get(&user, selectSQL, binaryUUID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return query.UserView{}, query.ErrUserNotFound
@@ -38,7 +40,7 @@ func (service *userQueryService) GetUser(id uuid.UUID) (query.UserView, error) {
 	}
 
 	return query.UserView{
-		ID:       user.UserId,
+		ID:       user.UserID,
 		Email:    user.Email,
 		Password: user.Password,
 		Role:     query.Role(user.Role),
@@ -46,11 +48,11 @@ func (service *userQueryService) GetUser(id uuid.UUID) (query.UserView, error) {
 }
 
 func (service *userQueryService) GetByEmail(email string) (query.UserView, error) {
-	const selectSql = `SELECT * from user WHERE email = ?`
+	const selectSQL = `SELECT * from user WHERE email = ?`
 
 	var user sqlxUserView
 
-	err := service.client.Get(&user, selectSql, email)
+	err := service.client.Get(&user, selectSQL, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return query.UserView{}, domain.ErrUserNotFound
@@ -59,16 +61,15 @@ func (service *userQueryService) GetByEmail(email string) (query.UserView, error
 	}
 
 	return query.UserView{
-		ID:       user.UserId,
+		ID:       user.UserID,
 		Email:    user.Email,
 		Password: user.Password,
 		Role:     query.Role(user.Role),
 	}, nil
-
 }
 
 type sqlxUserView struct {
-	UserId   uuid.UUID `db:"user_id"`
+	UserID   uuid.UUID `db:"user_id"`
 	Email    string    `db:"email"`
 	Password string    `db:"password"`
 	Role     int       `db:"role"`

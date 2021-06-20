@@ -2,13 +2,19 @@ package transport
 
 import (
 	"golang.org/x/net/context"
+
 	authenticationapi "userservice/api/authenticationservice"
 	authorizationapi "userservice/api/authorizationservice"
 	"userservice/pkg/userservice/app/service"
 	"userservice/pkg/userservice/infrastructure"
 )
 
-func NewAuthServer(container infrastructure.DependencyContainer) *authServer {
+type AuthServer interface {
+	authorizationapi.AuthorizationServiceServer
+	authenticationapi.AuthenticationServiceServer
+}
+
+func NewAuthServer(container infrastructure.DependencyContainer) AuthServer {
 	return &authServer{container: container}
 }
 
@@ -38,11 +44,11 @@ func (server *authServer) AuthenticateUser(_ context.Context, req *authenticatio
 
 	return &authenticationapi.AuthenticateUserResponse{
 		UserID: userID,
-		Role:   userRoleToAuthApiMap[role],
+		Role:   userRoleToAuthAPIMap[role],
 	}, nil
 }
 
-var userRoleToAuthApiMap = map[service.Role]authenticationapi.UserRole{
+var userRoleToAuthAPIMap = map[service.Role]authenticationapi.UserRole{
 	service.Listener: authenticationapi.UserRole_LISTENER,
 	service.Creator:  authenticationapi.UserRole_CREATOR,
 }

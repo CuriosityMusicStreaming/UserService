@@ -2,11 +2,11 @@ package auth
 
 import (
 	"github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
+	"github.com/pkg/errors"
+
+	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/app/query"
 	appservice "userservice/pkg/userservice/app/service"
-
-	"github.com/pkg/errors"
-	"userservice/pkg/userservice/app/hash"
 )
 
 var (

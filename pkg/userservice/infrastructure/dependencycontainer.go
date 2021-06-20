@@ -3,6 +3,7 @@ package infrastructure
 import (
 	commonauth "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/app/auth"
 	commonmysql "github.com/CuriosityMusicStreaming/ComponentsPool/pkg/infrastructure/mysql"
+
 	"userservice/pkg/userservice/app/auth"
 	"userservice/pkg/userservice/app/hash"
 	"userservice/pkg/userservice/app/query"
@@ -22,7 +23,7 @@ type DependencyContainer interface {
 	UserQueryService() query.UserQueryService
 }
 
-func NewDependencyContainer(client commonmysql.TransactionalClient, parameters Parameters) *dependencyContainer {
+func NewDependencyContainer(client commonmysql.TransactionalClient, parameters Parameters) DependencyContainer {
 	userQueryService := userQueryService(client)
 	hasher := hasher(parameters)
 
